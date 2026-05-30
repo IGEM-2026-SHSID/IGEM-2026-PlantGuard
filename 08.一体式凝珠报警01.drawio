@@ -1,0 +1,154 @@
+<mxfile host="65bd71144e">
+    <diagram id="GB9KaHHgqwSA2747qPvE" name="第 1 页">
+        <mxGraphModel dx="1688" dy="949" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="4" value="" style="edgeStyle=none;html=1;" parent="1" source="2" target="3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="" style="edgeStyle=none;html=1;" parent="1" source="2" target="5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="一体式凝珠监测报警系统" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="339" y="572" width="150" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3" target="20">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="报警" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="389" y="500" width="50" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="" style="edgeStyle=none;html=1;" parent="1" source="5" target="7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="监测" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="530" y="570" width="50" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="数据建模" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="570" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="47" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="9">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="550" y="805" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="9" value="家庭用户" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="400" y="790" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="技术方案有扩大的优秀的解决方案？" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="780" width="220" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="43" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="11" target="42">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="小规模农民用户" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="400" y="830" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="13" target="21">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="变色程度" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="420" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="19" target="13">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="决定" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="28">
+                    <mxGeometry x="-0.1048" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="19" value="土壤湿度" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="340" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="无线局域网" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="374" y="420" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" value="难以实现的话有无PlanB" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="400" y="750" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="校准变量" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="710" y="460" width="90" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="空气质量" style="whiteSpace=wrap;html=1;" vertex="1" parent="30">
+                    <mxGeometry x="10" y="148" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="光照强度" style="whiteSpace=wrap;html=1;" vertex="1" parent="30">
+                    <mxGeometry x="10" y="110" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="环境湿度" style="whiteSpace=wrap;html=1;" vertex="1" parent="30">
+                    <mxGeometry x="10" y="70" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="室温" style="whiteSpace=wrap;html=1;" vertex="1" parent="30">
+                    <mxGeometry x="10" y="30" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="" style="image;html=1;image=img/lib/clip_art/networking/Bridge_128x128.png" vertex="1" parent="1">
+                    <mxGeometry x="374" y="350" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="硬件方面" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="720" y="750" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="摄像头的工况干扰如何优化？" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="810" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="34" target="35">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="变色情况产生偏差如何解决？" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="840" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" value="通过校准变量将情况稳定在基准面上" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="950" y="825" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="50" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="37" target="38">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="51" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="37" target="38">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="52" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="37" target="38">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="53" style="edgeStyle=none;html=1;" edge="1" parent="1" source="37" target="54">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="950" y="1015" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="37" value="&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;凝珠变色时间会不会有很高的延迟&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="1000" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="38" value="&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;假如土壤只是临时比较湿的话，凝珠可不可以分辨真实的干旱程度&lt;/font&gt;&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="1030" width="370" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" value="凝珠多长，还是只能探测到表面土壤的情况" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="1060" width="250" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="40" value="摄像头淋水老化" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="870" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="42" target="44">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="42" value="模块集群" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="550" y="830" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="44" value="单元化独立控制" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="550" y="875" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="48" value="单装置智能监控" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="550" y="790" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="49" value="生物方向" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="720" y="970" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="摄像头" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="830" y="420" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="54" value="增加酶含量" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="950" y="1000" width="80" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
