@@ -15,16 +15,9 @@ def setup_access_point():
     """创建热点，手机可以加入该局域网。"""
     ap = network.WLAN(network.AP_IF)
     ap.active(True)
-
-    # 让 AP 立即启动
     time.sleep(1)
-
-    # 设定热点名称和密码，密码至少 8 位
     ap.config(essid=SSID, password=PASSWORD, authmode=network.AUTH_WPA2_PSK)
-
-    # 设定地址，确保手机可以访问到 192.168.4.1
     ap.ifconfig((HOST_IP, HOST_MASK, HOST_GATEWAY, HOST_DNS))
-
     return ap
 
 
@@ -83,7 +76,7 @@ def start_server():
             conn.close()
 
 
-def main():
+def plantguard_main():
     ap = setup_access_point()
     print("[PlantGuard] AP IP:", ap.ifconfig()[0])
     print("[PlantGuard] 等待手机连接...")
@@ -91,4 +84,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    plantguard_main()
