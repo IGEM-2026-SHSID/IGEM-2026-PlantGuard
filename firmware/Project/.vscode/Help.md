@@ -7,6 +7,7 @@
     - esp32-esp32-generic-s3-stubs
     - esp32-esp32-generic-c3-stubs
 - Thonny (python包 `用于安装固件`)
+- esptool
 
 ## 扩展
 - python全套
