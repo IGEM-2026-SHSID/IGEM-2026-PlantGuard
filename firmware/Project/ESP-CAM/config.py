@@ -5,6 +5,7 @@ board-specific constants through the capture pipeline.
 """
 
 DEVICE_ID = "plantguard-cam-01"
+DEBUG_LOG = True
 
 WIFI_SSID = "PlantGuard"
 WIFI_PASSWORD = "plantguard"
@@ -25,4 +26,3 @@ JPEG_QUALITY = 8  # Decoder quality, valid range: 1..8.
 CAMERA_JPEG_QUALITY = 12  # Firmware encoder setting when supported.
 
 LOOP_SLEEP_MS = 20
-
