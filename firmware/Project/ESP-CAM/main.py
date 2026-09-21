@@ -1,0 +1,97 @@
+"""PlantGuard ESP32-CAM MicroPython entry point."""
+
+import gc
+import time
+import machine
+import network
+import camera
+import urequests
+
+import config
+from camera_pipeline import run_capture
+from http_client import upload_report
+from lib.JPEGdecoder import jpeg
+from scheduler import choose_trigger, debounce_accept, ticks_due
+from wifi_manager import WifiManager
+
+
+_gpio_pending = False
+_gpio_edge_ms = 0
+
+
+def _trigger_irq(pin):
+    # ISR intentionally performs no allocation, capture, decode, or networking.
+    global _gpio_pending, _gpio_edge_ms
+    _gpio_edge_ms = time.ticks_ms()
+    _gpio_pending = True
+
+
+def _camera_init():
+    kwargs = {"format": camera.JPEG, "fb_location": camera.PSRAM}
+    frame = getattr(camera, config.FRAME_SIZE, None)
+    if frame is not None:
+        kwargs["framesize"] = frame
+    # Firmware ports differ on whether quality is accepted; preserve baseline
+    # init compatibility and retry without optional tuning.
+    kwargs["quality"] = config.CAMERA_JPEG_QUALITY
+    try:
+        camera.init(0, **kwargs)
+    except TypeError:
+        kwargs.pop("quality", None)
+        camera.init(0, **kwargs)
+
+
+def main():
+    global _gpio_pending
+    _camera_init()
+    wlan = network.WLAN(network.STA_IF)
+    wifi = WifiManager(wlan, config.WIFI_SSID, config.WIFI_PASSWORD,
+                       time.ticks_ms, time.ticks_diff, time.sleep_ms,
+                       config.WIFI_CONNECT_TIMEOUT_MS,
+                       config.WIFI_RETRY_INTERVAL_MS)
+    wifi.connect(force=True)
+
+    trigger_pin = machine.Pin(config.TRIGGER_PIN, machine.Pin.IN, machine.Pin.PULL_DOWN)
+    trigger_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=_trigger_irq)
+
+    sequence = 0
+    last_gpio_ms = None
+    next_capture = time.ticks_add(time.ticks_ms(), config.CAPTURE_INTERVAL_MS)
+    while True:
+        now = time.ticks_ms()
+        gpio = _gpio_pending
+        edge_ms = _gpio_edge_ms
+        if gpio:
+            _gpio_pending = False
+            gpio = debounce_accept(edge_ms, last_gpio_ms,
+                                   config.TRIGGER_DEBOUNCE_MS, time.ticks_diff)
+            if gpio:
+                last_gpio_ms = edge_ms
+        due = ticks_due(now, next_capture, time.ticks_diff)
+        trigger = choose_trigger(gpio, due)
+        if trigger is None:
+            wifi.connect()
+            time.sleep_ms(config.LOOP_SLEEP_MS)
+            continue
+
+        # Any capture services the simultaneous timer event. Advance from now
+        # to avoid an immediate second capture after a delayed/long decode.
+        next_capture = time.ticks_add(now, config.CAPTURE_INTERVAL_MS)
+        sequence += 1
+        report = run_capture(camera, jpeg, time.ticks_ms, config.DEVICE_ID,
+                             sequence, trigger, config.JPEG_QUALITY)
+        if wifi.connect():
+            upload = upload_report(urequests, config.UPLOAD_URL, report,
+                                   config.HTTP_TIMEOUT_SECONDS, time.ticks_ms)
+            report["timing_ms"]["upload"] = upload["elapsed_ms"]
+            if not upload["ok"]:
+                report["error"] = upload["error"]
+        elif report["error"] is None:
+            report["error"] = {"stage": "wifi", "type": "ConnectionError",
+                               "message": "Wi-Fi unavailable; report not uploaded"}
+        gc.collect()
+
+
+if __name__ == "__main__":
+    main()
+
