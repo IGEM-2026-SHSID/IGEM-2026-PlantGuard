@@ -42,26 +42,35 @@ def run():
     server = HTTPServer(app)
     _log("http_ready", "%s:%d" % (config.HTTP_HOST, config.HTTP_PORT))
     last_sample = ticks_ms() - config.SAMPLE_INTERVAL_MS
-    while True:
-        now = ticks_ms()
-        if ticks_diff(now, last_sample) >= config.SAMPLE_INTERVAL_MS:
+    try:
+        while True:
+            now = ticks_ms()
+            if ticks_diff(now, last_sample) >= config.SAMPLE_INTERVAL_MS:
+                try:
+                    record = sampler.sample()
+                    sensor_history.append(record)
+                    _log("sample", "dht=%s tsl2591=%s temp=%s humidity=%s lux=%s" % (
+                        record["dht_status"], record["tsl2591_status"],
+                        record["temperature_c"], record["air_humidity_pct"],
+                        record["lux"]))
+                    if record["errors"]:
+                        _log("sample_warnings", record["errors"])
+                except Exception as exc:
+                    _log("sample_failed", exc)
+                last_sample = now
             try:
-                record = sampler.sample()
-                sensor_history.append(record)
-                _log("sample", "dht=%s tsl2591=%s temp=%s humidity=%s lux=%s" % (
-                    record["dht_status"], record["tsl2591_status"],
-                    record["temperature_c"], record["air_humidity_pct"],
-                    record["lux"]))
-                if record["errors"]:
-                    _log("sample_warnings", record["errors"])
+                server.poll()
             except Exception as exc:
-                _log("sample_failed", exc)
-            last_sample = now
+                _log("http_poll_failed", exc)
+                sleep_ms(50)
+    except KeyboardInterrupt:
+        _log("stopped", "keyboard interrupt")
+    finally:
         try:
-            server.poll()
+            server.sock.close()
         except Exception as exc:
-            _log("http_poll_failed", exc)
-            sleep_ms(50)
+            _log("http_close_failed", exc)
+        _log("http_closed")
 
 if __name__ == "__main__":
     run()

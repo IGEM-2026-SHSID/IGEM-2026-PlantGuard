@@ -10,7 +10,7 @@ import urequests
 import config
 from camera_pipeline import run_capture
 from http_client import upload_report
-from lib.JPEGdecoder import jpeg
+from JPEGdecoder import jpeg
 from scheduler import choose_trigger, debounce_accept, ticks_due
 from wifi_manager import WifiManager
 
@@ -69,52 +69,66 @@ def main():
     sequence = 0
     last_gpio_ms = None
     next_capture = time.ticks_add(time.ticks_ms(), config.CAPTURE_INTERVAL_MS)
-    while True:
-        now = time.ticks_ms()
-        gpio = _gpio_pending
-        edge_ms = _gpio_edge_ms
-        if gpio:
-            _gpio_pending = False
-            gpio = debounce_accept(edge_ms, last_gpio_ms,
-                                   config.TRIGGER_DEBOUNCE_MS, time.ticks_diff)
+    try:
+        while True:
+            now = time.ticks_ms()
+            gpio = _gpio_pending
+            edge_ms = _gpio_edge_ms
             if gpio:
-                last_gpio_ms = edge_ms
-                _log("gpio_trigger_accepted")
-            else:
-                _log("gpio_trigger_debounced")
-        due = ticks_due(now, next_capture, time.ticks_diff)
-        trigger = choose_trigger(gpio, due)
-        if trigger is None:
-            wifi.connect()
-            time.sleep_ms(config.LOOP_SLEEP_MS)
-            continue
+                _gpio_pending = False
+                gpio = debounce_accept(edge_ms, last_gpio_ms,
+                                       config.TRIGGER_DEBOUNCE_MS, time.ticks_diff)
+                if gpio:
+                    last_gpio_ms = edge_ms
+                    _log("gpio_trigger_accepted")
+                else:
+                    _log("gpio_trigger_debounced")
+            due = ticks_due(now, next_capture, time.ticks_diff)
+            trigger = choose_trigger(gpio, due)
+            if trigger is None:
+                wifi.connect()
+                time.sleep_ms(config.LOOP_SLEEP_MS)
+                continue
 
-        # Any capture services the simultaneous timer event. Advance from now
-        # to avoid an immediate second capture after a delayed/long decode.
-        next_capture = time.ticks_add(now, config.CAPTURE_INTERVAL_MS)
-        sequence += 1
-        _log("capture_start", "sequence=%d trigger=%s" % (sequence, trigger))
-        report = run_capture(camera, jpeg, time.ticks_ms, config.DEVICE_ID,
-                             sequence, trigger, config.JPEG_QUALITY)
-        _log("capture_done", "size=%sx%s pixels=%s status=%s" % (
-            report["width"], report["height"], report["decoded_pixels"],
-            report["analysis_status"]))
-        if report["error"] is not None:
-            _log("capture_error", report["error"])
-        if wifi.connect():
-            upload = upload_report(urequests, config.UPLOAD_URL, report,
-                                   config.HTTP_TIMEOUT_SECONDS, time.ticks_ms)
-            report["timing_ms"]["upload"] = upload["elapsed_ms"]
-            if not upload["ok"]:
-                report["error"] = upload["error"]
-                _log("upload_failed", upload["error"])
-            else:
-                _log("upload_ok", "elapsed_ms=%s" % upload["elapsed_ms"])
-        elif report["error"] is None:
-            report["error"] = {"stage": "wifi", "type": "ConnectionError",
-                               "message": "Wi-Fi unavailable; report not uploaded"}
-            _log("upload_skipped", report["error"])
-        gc.collect()
+            # Any capture services a simultaneous timer event.
+            next_capture = time.ticks_add(now, config.CAPTURE_INTERVAL_MS)
+            sequence += 1
+            _log("capture_start", "sequence=%d trigger=%s" % (sequence, trigger))
+            report = run_capture(camera, jpeg, time.ticks_ms, config.DEVICE_ID,
+                                 sequence, trigger, config.JPEG_QUALITY)
+            _log("capture_done", "size=%sx%s pixels=%s status=%s" % (
+                report["width"], report["height"], report["decoded_pixels"],
+                report["analysis_status"]))
+            if report["error"] is not None:
+                _log("capture_error", report["error"])
+            if wifi.connect():
+                upload = upload_report(urequests, config.UPLOAD_URL, report,
+                                       config.HTTP_TIMEOUT_SECONDS, time.ticks_ms)
+                report["timing_ms"]["upload"] = upload["elapsed_ms"]
+                if not upload["ok"]:
+                    report["error"] = upload["error"]
+                    _log("upload_failed", upload["error"])
+                else:
+                    _log("upload_ok", "elapsed_ms=%s" % upload["elapsed_ms"])
+            elif report["error"] is None:
+                report["error"] = {"stage": "wifi", "type": "ConnectionError",
+                                   "message": "Wi-Fi unavailable; report not uploaded"}
+                _log("upload_skipped", report["error"])
+            gc.collect()
+    except KeyboardInterrupt:
+        _log("stopped", "keyboard interrupt")
+    finally:
+        try:
+            trigger_pin.irq(handler=None)
+        except Exception as exc:
+            _log("gpio_release_failed", exc)
+        try:
+            deinit = getattr(camera, "deinit", None)
+            if deinit is not None:
+                deinit()
+        except Exception as exc:
+            _log("camera_release_failed", exc)
+        _log("camera_released")
 
 
 if __name__ == "__main__":
