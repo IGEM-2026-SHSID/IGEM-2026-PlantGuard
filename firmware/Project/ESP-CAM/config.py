@@ -22,7 +22,7 @@ TRIGGER_DEBOUNCE_MS = 250
 FRAME_SIZE = "QQVGA"  # 160 x 120
 EXPECTED_WIDTH = 160
 EXPECTED_HEIGHT = 120
-JPEG_QUALITY = 8  # Decoder quality, valid range: 1..8.
+JPEG_QUALITY = 4  # Decoder quality, valid range: 1..8; lower uses less RAM.
 CAMERA_JPEG_QUALITY = 12  # Firmware encoder setting when supported.
 
 LOOP_SLEEP_MS = 20

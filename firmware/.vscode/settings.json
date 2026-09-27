@@ -16,5 +16,19 @@
             "command": "extension.execute",
             "priority": 4
         }
-    ]
+    ],
+    "python.analysis.stubPath": "c:\\Users\\24676\\.vscode\\extensions\\bright.mpy-studio-1.0.2\\typings\\esp32",
+    "python.analysis.typeshedPaths": [
+        "c:\\Users\\24676\\.vscode\\extensions\\bright.mpy-studio-1.0.2\\typings\\esp32",
+        "c:\\Users\\24676\\.vscode\\extensions\\bright.mpy-studio-1.0.2\\typings\\lvgl"
+    ],
+    "python.analysis.extraPaths": [
+        "c:\\Users\\24676\\.vscode\\extensions\\bright.mpy-studio-1.0.2\\typings\\esp32",
+        "c:\\Users\\24676\\.vscode\\extensions\\bright.mpy-studio-1.0.2\\typings\\lvgl"
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none"
+    },
+    "mpy-studio.selectedBoard": "esp32"
 }
