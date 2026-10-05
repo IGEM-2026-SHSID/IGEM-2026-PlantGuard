@@ -11,8 +11,10 @@ import urllib.request
 
 try:
     from .analysis import BlueAnalyzer, Settings, make_preview
+    from .records import DEFAULT_RECORDS_FILE, fetch_sensor, save_record
 except ImportError:
     from analysis import BlueAnalyzer, Settings, make_preview
+    from records import DEFAULT_RECORDS_FILE, fetch_sensor, save_record
 
 LOG = logging.getLogger("center_blue")
 DEFAULT_C3_URL = "http://192.168.4.1/api/v1/camera/readings"
@@ -81,12 +83,24 @@ def post_report(url, report):
             raise OSError("C3 returned HTTP %d" % response.status)
 
 
-def process_connection(conn, c3_url, analyzer, viewer=None):
-    """ACK only once C3 has accepted the measurement (including no-blue results)."""
+def record_with_sensor(c3_url, report, records_file):
+    try:
+        sensor, age = fetch_sensor(c3_url)
+        error = None
+    except (OSError, ValueError, UnicodeError) as exc:
+        sensor, age = None, None
+        error = "%s: %s" % (type(exc).__name__, exc)
+        LOG.warning("C3 sensor snapshot unavailable: %s", error)
+    return save_record(records_file, report, sensor, age, error)
+
+
+def process_connection(conn, c3_url, analyzer, viewer=None, records_file=DEFAULT_RECORDS_FILE):
+    """ACK only once C3 accepts the report and a local record is written."""
     try:
         metadata, jpeg = receive_frame(conn)
         report, image, mask = analyze_report(metadata, jpeg, analyzer)
         post_report(c3_url, report)
+        record_with_sensor(c3_url, report, records_file)
         conn.sendall(b"\x01")
     except Exception as exc:
         try:
@@ -133,7 +147,7 @@ class Viewer:
         self.root.destroy()
 
 
-def serve(host, port, c3_url, analyzer, show=False):
+def serve(host, port, c3_url, analyzer, show=False, records_file=DEFAULT_RECORDS_FILE):
     viewer = Viewer() if show else None
     try:
         with socket.create_server((host, port)) as listener:
@@ -149,7 +163,7 @@ def serve(host, port, c3_url, analyzer, show=False):
                 with conn:
                     conn.settimeout(10)
                     LOG.info("Receiving from %s", address[0])
-                    process_connection(conn, c3_url, analyzer, viewer)
+                    process_connection(conn, c3_url, analyzer, viewer, records_file)
     finally:
         if viewer:
             viewer.close()
@@ -160,6 +174,8 @@ def main():
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--c3-url", default=DEFAULT_C3_URL)
+    parser.add_argument("--records-file", type=Path, default=DEFAULT_RECORDS_FILE,
+                        help="append one JSONL row per analyzed photo")
     parser.add_argument("--roi-ratio", type=float, default=0.6)
     parser.add_argument("--hue-min", type=float, default=190)
     parser.add_argument("--hue-max", type=float, default=260)
@@ -187,10 +203,11 @@ def main():
             make_preview(report, image, mask).save(args.preview, format="PNG")
         if args.post:
             post_report(args.c3_url, report)
+            record_with_sensor(args.c3_url, report, args.records_file)
         print(json.dumps(report, indent=2, allow_nan=False))
     else:
         try:
-            serve(args.host, args.port, args.c3_url, analyzer, args.show)
+            serve(args.host, args.port, args.c3_url, analyzer, args.show, args.records_file)
         except KeyboardInterrupt:
             LOG.info("Stopped")
 

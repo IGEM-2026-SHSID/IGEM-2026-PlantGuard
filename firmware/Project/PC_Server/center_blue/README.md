@@ -27,6 +27,17 @@ py center_blue/server.py --image sample.jpg --post
 py -m unittest discover -s center_blue -p "test_*.py" -v
 ```
 
+每帧完成分析并提交 C3 后，程序会 GET 同一 C3 主机的
+`/api/v1/state`，将 `sensor`（温度、空气湿度、照度及光谱等原始字段）、
+`sensor_age_ms`、相机分析结果和本机 UTC `recorded_at` 作为一条 JSON 写入
+`center_blue/measurements.jsonl`。文件为 UTF-8 JSON Lines，逐行追加，
+可用 `--records-file 路径` 指定已有文件或其他文件名（父目录须存在）。
+采样是 C3 定期进行的，`sensor_age_ms` 表示读取时最近一次采样已有多旧，
+并不代表拍照瞬间重新采样。C3 尚未采样时 `sensor` 为 `null`；读取失败时
+也会保留该相机记录，并在 `sensor_error` 留下原因。文件写入失败时本次
+返回失败确认。离线 `--image` 默认只输出 JSON；搭配 `--post` 才会向 C3
+提交并写入本地合并记录。
+
 本地图像模式默认只输出 JSON，不发送到 C3；`--post` 会以 `pc-local`
 设备身份回传该结果。实际相机模式保留设备、序号、触发来源和拍摄时钟。
 
@@ -58,8 +69,9 @@ py -m unittest discover -s center_blue -p "test_*.py" -v
 400 万像素。元数据必须包含 `device_id`、`sequence`、`capture_uptime_ms`、
 `trigger`（timer/gpio），兼容现有 C3 字段校验。
 
-只有 C3 接受 POST（HTTP 200/201）后才给 CAM 返回 `01`；无蓝色结果也会
+只有 C3 接受 POST（HTTP 200/201）且本地记录已写入后才给 CAM 返回 `01`；无蓝色结果也会
 正常上传并确认。图像损坏、协议错误、C3 拒绝或网络故障返回 `00`，继续
-接收下一帧。预览失败不会使已成功上传的帧被重传。HTTP 超时 5 秒，TCP
+接收下一帧。预览或传感器读取失败不会使已成功上传的帧被重传。HTTP 超时 5 秒，TCP
 单次接收超时 10 秒；不自动重复 POST，避免额外写入 C3 历史。当前 C3
-接口不按序号去重，若上传成功但 ACK 丢失，板端重传仍可能形成重复记录。
+接口不按序号去重，若上传成功但文件写入失败或 ACK 丢失，板端重传仍可能
+形成重复记录；本地文件同样不按序号去重。

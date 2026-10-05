@@ -15,6 +15,7 @@ from PIL import Image, ImageDraw
 
 from center_blue.analysis import BlueAnalyzer, Settings, make_preview
 from center_blue import server
+from center_blue.records import state_url
 
 
 def encoded(image, fmt="PNG"):
@@ -135,6 +136,41 @@ class TransportTests(unittest.TestCase):
                     self.assertIsNone(server.process_connection(receiver, "http://localhost", BlueAnalyzer()))
             self.assertEqual(sender.recv(1), b"\x00")
 
+    def test_state_url_and_invalid_state(self):
+        self.assertEqual(state_url("http://127.0.0.1:8765/custom/path?x=1"),
+                         "http://127.0.0.1:8765/api/v1/state")
+        with self.assertRaises(ValueError):
+            state_url("invalid")
+
+    def test_sensor_read_failure_still_records_photo(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "readings.jsonl"
+            sender, receiver = socket.socketpair()
+            with sender, receiver:
+                sender.sendall(self.packet())
+                with patch.object(server, "post_report") as post, \
+                        patch.object(server, "fetch_sensor", side_effect=OSError("offline")), \
+                        self.assertLogs("center_blue", level="WARNING"):
+                    report = server.process_connection(
+                        receiver, "http://127.0.0.1", BlueAnalyzer(), records_file=path)
+                post.assert_called_once()
+                self.assertEqual(sender.recv(1), b"\x01")
+            row = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(row["camera"]["blue_value"], report["blue_value"])
+            self.assertIsNone(row["sensor"])
+            self.assertIn("offline", row["sensor_error"])
+
+    def test_write_failure_returns_negative_ack(self):
+        sender, receiver = socket.socketpair()
+        with sender, receiver:
+            sender.sendall(self.packet())
+            with patch.object(server, "post_report"), \
+                    patch.object(server, "fetch_sensor", return_value=(None, None)), \
+                    patch.object(server, "save_record", side_effect=OSError("disk full")), \
+                    self.assertLogs("center_blue", level="WARNING"):
+                self.assertIsNone(server.process_connection(receiver, "http://127.0.0.1", BlueAnalyzer()))
+            self.assertEqual(sender.recv(1), b"\x00")
+
     def test_actual_c3_contract_over_http_and_ack_order(self):
         # Exercise the repository's real C3 route behind a local HTTP listener.
         c3_path = str(Path(__file__).resolve().parents[2] / "ESP32-C3")
@@ -147,6 +183,14 @@ class TransportTests(unittest.TestCase):
             sys.path.remove(c3_path)
 
         class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                status, content_type, response = app.route("GET", self.path)
+                self.send_response(status)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(response)))
+                self.end_headers()
+                self.wfile.write(response)
+
             def do_POST(self):
                 body = self.rfile.read(int(self.headers["Content-Length"]))
                 self.server.test.assertLessEqual(len(body), 2048)
@@ -166,15 +210,29 @@ class TransportTests(unittest.TestCase):
         thread.start()
         try:
             url = "http://127.0.0.1:%d/api/v1/camera/readings" % httpd.server_port
-            for color in ("blue", "white"):
-                sender, receiver = socket.socketpair()
-                with sender, receiver:
-                    sender.settimeout(2)
-                    sender.sendall(self.packet(color))
-                    report = server.process_connection(receiver, url, BlueAnalyzer())
-                    self.assertIsNotNone(report)
-                    self.assertEqual(app.cameras.latest()["blue_value"], report["blue_value"])
-                    self.assertEqual(sender.recv(1), b"\x01")
+            app.sensors.append({"uptime_ms": app.clock(), "temperature_c": 26,
+                                "air_humidity_pct": 60, "lux": 123,
+                                "full_spectrum": 100, "infrared": 30,
+                                "visible": 70, "dht_status": "ok",
+                                "tsl2591_status": "ok", "errors": {}})
+            with tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "readings.jsonl"
+                for color in ("blue", "white"):
+                    sender, receiver = socket.socketpair()
+                    with sender, receiver:
+                        sender.settimeout(2)
+                        sender.sendall(self.packet(color))
+                        report = server.process_connection(receiver, url, BlueAnalyzer(), records_file=path)
+                        self.assertIsNotNone(report)
+                        self.assertEqual(app.cameras.latest()["blue_value"], report["blue_value"])
+                        self.assertEqual(sender.recv(1), b"\x01")
+                records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+                self.assertEqual(len(records), 2)
+                self.assertEqual([row["camera"]["blue_value"] for row in records], [100, None])
+                self.assertEqual([row["sensor"]["lux"] for row in records], [123, 123])
+                self.assertTrue(all(row["sensor_age_ms"] >= 0 for row in records))
+                self.assertTrue(all(row["recorded_at"] for row in records))
+                self.assertTrue(all(row["sensor_error"] is None for row in records))
             self.assertEqual(len(app.cameras), 2)
             self.assertIsNone(app.state()["camera"]["blue_value"])
         finally:
