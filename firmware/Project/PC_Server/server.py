@@ -9,6 +9,8 @@ import urllib.request
 
 from PIL import Image
 
+from blue_analysis import BluePhotoWindow
+
 MAGIC = b"PGJ1"
 MAX_METADATA = 4096
 MAX_JPEG = 1024 * 1024
@@ -62,15 +64,22 @@ def post_report(url, report):
 
 
 def serve(host, port, c3_url):
+    photo_viewer = BluePhotoWindow()
     with socket.create_server((host, port)) as server:
+        server.settimeout(0.1)
         print("Listening for ESP-CAM on %s:%d" % (host, port))
         while True:
-            conn, address = server.accept()
+            try:
+                conn, address = server.accept()
+            except socket.timeout:
+                photo_viewer.process_events()
+                continue
             with conn:
                 conn.settimeout(20)
                 try:
                     metadata, jpeg = receive_frame(conn)
                     report = decode_report(metadata, jpeg)
+                    photo_viewer.show(jpeg)
                     post_report(c3_url, report)
                     conn.sendall(b"\x01")
                     print("Frame %s from %s: %dx%d, %d bytes" %
